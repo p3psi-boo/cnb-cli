@@ -1,0 +1,10 @@
+/target
+/.context/
+**/*.rs.bk
+*.pdb
+*.bak
+*.swp
+*~
+.DS_Store
+.env
+.env.local
