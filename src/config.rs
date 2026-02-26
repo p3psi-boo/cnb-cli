@@ -76,3 +76,34 @@ impl AuthConfig {
         dirs::config_dir().map(|p| p.join("cnb").join("auth.json"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_prefers_cli_over_file_and_defaults() {
+        let file = AuthConfig {
+            token: Some("file-token".to_string()),
+            api_url: Some("https://file.example".to_string()),
+        };
+        let resolved = AuthConfig::resolve(Some("https://cli.example"), Some("cli-token"), file);
+        assert_eq!(resolved.api_url, "https://cli.example");
+        assert_eq!(resolved.token.as_deref(), Some("cli-token"));
+    }
+
+    #[test]
+    fn resolve_falls_back_to_file_then_default() {
+        let file = AuthConfig {
+            token: Some("file-token".to_string()),
+            api_url: Some("https://file.example".to_string()),
+        };
+        let resolved = AuthConfig::resolve(None, None, file);
+        assert_eq!(resolved.api_url, "https://file.example");
+        assert_eq!(resolved.token.as_deref(), Some("file-token"));
+
+        let resolved = AuthConfig::resolve(None, None, AuthConfig::default());
+        assert_eq!(resolved.api_url, DEFAULT_API_URL);
+        assert!(resolved.token.is_none());
+    }
+}
